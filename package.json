@@ -1,0 +1,37 @@
+{
+  "name": "telegram-bot-parser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:dev": "ts-node server.ts",
+    "start:bot": "node dist/bot.js",
+    "start:bot:dev": "ts-node src/bot.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@typegoose/typegoose": "^12.11.0",
+    "axios": "^1.8.4",
+    "bullmq": "^5.48.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.6.1",
+    "mongoose": "^8.10.1",
+    "openai": "^4.93.0",
+    "p-limit": "^6.2.0",
+    "streamroller": "^3.1.5",
+    "telegraf": "^4.16.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^22.13.5",
+    "@types/xlsx": "^0.0.35",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}
