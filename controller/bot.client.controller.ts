@@ -288,7 +288,7 @@ class BotClientController {
 
   private async showOffers(ctx: any, category: string, cahceRate: string, idJob: string) {
     try {
-      const offers = await getPosts(Categories[category as keyof typeof Categories], cahceRate, idJob)
+      const offers = await getPosts(Categories[category as keyof typeof Categories], cahceRate, idJob);
       if (offers.length === 0) {
         await ctx.reply(`😞 Пока нет активных предложений в категории ${category}`);
         return;
