@@ -46,6 +46,7 @@ class BotController {
     this.bot.on('photo', async (ctx) => {
       try {
         if(ctx.message.caption && ctx.message.photo.length > 0) {
+          console.log(ctx.message.photo);
           await unifiedQueue.addJob(
             JobType.MESSAGE_PROCESSING,
             {

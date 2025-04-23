@@ -273,9 +273,9 @@ class BotClientController {
   private async getMessageWithButtons (category: string, cahceRate: string, index: number, idJob: string) {
     const offers = await getPosts(Categories[category  as keyof typeof  Categories], cahceRate, idJob);
     const nameSalesNick = offers[index].salesman[0] !== '@' ? offers[index].salesman : offers[index].salesman.slice(1)
-    const urlPhoto = await this.getPhotoUrlById(offers[index].photoId);
+    //const urlPhoto = await this.getPhotoUrlById(offers[index].photoId);
     return {
-      photoId: urlPhoto,
+      photoId: offers[index].photoId,
       caption: `🔥 Пост ${index + 1}/${offers.length}\n\n` +
               `${offers[index].message}`,
       reply_markup: Markup.inlineKeyboard([
@@ -298,10 +298,10 @@ class BotClientController {
       let message = `🔥 Пост ${1}/${offers.length}:\n\n`;
       message+=offers[0].message;
 
-      const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
+      //const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
 
       const nameSalesNick = offers[0].salesman[0] !== '@' ? offers[0].salesman : offers[0].salesman.slice(1);
-      await ctx.replyWithPhoto(urlPhoto, {
+      await ctx.replyWithPhoto(offers[0].photoId, {
         caption: message,
         reply_markup: Markup.inlineKeyboard([
           Markup.button.callback('⬅️', `prev_post;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`),
