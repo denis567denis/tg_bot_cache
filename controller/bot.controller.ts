@@ -22,6 +22,7 @@ interface MessageProcessingData {
 class BotController {
   private bot: Telegraf;
   private deepseek: DeepSeekService;
+  private usedNumbers = new Set();
 
   constructor(config: BotConfig) {
     this.bot = new Telegraf(config.telegramToken);
@@ -109,7 +110,7 @@ class BotController {
     );
 
     if (updatedStat.postCount >= 10) {
-      await botClientController.sendNotifications(cacheRate, category, updatedStat._id.toString());
+      await botClientController.sendNotifications(cacheRate, category, '' + this.generateUniqueFourDigitNumber(this.usedNumbers));
       await PostCountCategoryModel.updateOne(
         { 
           cacheRate,
@@ -118,6 +119,16 @@ class BotController {
         { postCount: 0 }
       );
     }
+  }
+
+  private generateUniqueFourDigitNumber(existingNumbers = new Set()) {
+    let number;
+    do {
+      number = Math.floor(Math.random() * (9999 - 1000 + 1)) + 1000;
+    } while (existingNumbers.has(number));
+    existingNumbers.add(number);
+  
+    return number;
   }
 
   public start() {
