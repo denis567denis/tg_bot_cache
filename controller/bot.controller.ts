@@ -109,7 +109,7 @@ class BotController {
     );
 
     if (updatedStat.postCount >= 10) {
-      await botClientController.sendNotifications(cacheRate, category, '' + updatedStat._id);
+      await botClientController.sendNotifications(cacheRate, category, updatedStat._id.toString());
       await PostCountCategoryModel.updateOne(
         { 
           cacheRate,
