@@ -1,4 +1,4 @@
-import { Telegraf } from 'telegraf';
+import { Input, Telegraf } from 'telegraf';
 import { PostCacheModel } from '../models/PostCacheModel';
 import { unifiedQueue, JobType } from '../services/queue.service';
 import { UserVipModel } from '../models/UserVipModel';
@@ -97,7 +97,7 @@ class BotClientController {
       const { caption, reply_markup, photoId } = await this.getMessageWithButtons(category, cahce, index, idJob);
       await ctx.editMessageMedia({
         type: 'photo',
-        media: photoId!,
+        media: Input.fromURL(photoId!),
         caption: caption,
       }, {
         reply_markup: reply_markup
@@ -116,7 +116,7 @@ class BotClientController {
       const { caption, reply_markup, photoId } = await this.getMessageWithButtons(category, cahce, index, idJob);
       await ctx.editMessageMedia({
         type: 'photo',
-        media: photoId!,
+        media: Input.fromURL(photoId!),
         caption: caption,
       }, {
         reply_markup: reply_markup
@@ -302,7 +302,7 @@ class BotClientController {
 
       console.log(`prev_post;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`);
       const nameSalesNick = offers[0].salesman[0] !== '@' ? offers[0].salesman : offers[0].salesman.slice(1);
-      await ctx.replyWithPhoto(urlPhoto, {
+      await ctx.replyWithPhoto(Input.fromURL(urlPhoto!), {
         caption: message,
         reply_markup: Markup.inlineKeyboard([
           Markup.button.callback('⬅️', `p;i:${offers.length-1};cat:${category};cahce:${cahceRate};id:${idJob}`),
