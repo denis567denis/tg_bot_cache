@@ -351,9 +351,10 @@ class BotClientController {
       const subscribers = await UserVipModel.find({ subscribeEvent: {
         $in: subscribeEvent
       } });
+      console.log('start_notification');
 
       for await (let sub of subscribers) {
-
+        console.log(subscribeEvent);
         await this.bot.telegram.sendMessage(
           sub.idTg,
           `🔥🔥🔥 вышло топ 10 предложений по ${job.data.category} .`,
