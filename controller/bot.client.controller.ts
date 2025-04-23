@@ -300,7 +300,7 @@ class BotClientController {
 
       const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
 
-      console.log('`prev_post;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`');
+      console.log(`prev_post;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`);
       const nameSalesNick = offers[0].salesman[0] !== '@' ? offers[0].salesman : offers[0].salesman.slice(1);
       await ctx.replyWithPhoto(urlPhoto, {
         caption: message,
