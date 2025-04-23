@@ -48,7 +48,7 @@ class UnifiedQueue {
 
   public async addJob<T>(type: JobType, data: T, priority?: number) {
     return this.queue.add(type, data, {
-      priority: priority || 1,
+      priority: priority || 2,
       jobId: `${type}_${Date.now()}`,
     });
   }

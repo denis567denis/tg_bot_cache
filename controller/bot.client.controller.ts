@@ -314,13 +314,15 @@ class BotClientController {
 
 
   public async sendNotifications(cacheRate: string, category: string, idJob: string) {
+    console.log("notificati_bofere_crate_work", cacheRate, category, idJob);
     unifiedQueue.addJob(
       JobType.NOTIFICATION,
       {
         category,
         cacheRate,
         idJob
-      }
+      },
+      1
     );
 }
 
