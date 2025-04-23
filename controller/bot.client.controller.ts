@@ -45,7 +45,7 @@ class BotClientController {
     unifiedQueue.createWorker(
       JobType.NOTIFICATION,
       async (job) => {
-        this.handleNotificationJob(job as { data: NotificationJobData })
+        await this.handleNotificationJob(job as { data: NotificationJobData })
       }
     );
   }
