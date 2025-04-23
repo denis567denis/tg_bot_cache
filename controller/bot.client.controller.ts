@@ -97,7 +97,7 @@ class BotClientController {
       const { caption, reply_markup, photoId } = await this.getMessageWithButtons(category, cahce, index, idJob);
       await ctx.editMessageMedia({
         type: 'photo',
-        media: photoId,
+        media: photoId!,
         caption: caption,
       }, {
         reply_markup: reply_markup
@@ -116,7 +116,7 @@ class BotClientController {
       const { caption, reply_markup, photoId } = await this.getMessageWithButtons(category, cahce, index, idJob);
       await ctx.editMessageMedia({
         type: 'photo',
-        media: photoId,
+        media: photoId!,
         caption: caption,
       }, {
         reply_markup: reply_markup
@@ -272,9 +272,8 @@ class BotClientController {
 
   private async getMessageWithButtons (category: string, cahceRate: string, index: number, idJob: string) {
     const offers = await getPosts(Categories[category  as keyof typeof  Categories], cahceRate, idJob);
-    const nameSalesNick = offers[index].salesman[0] !== '@' ? offers[index].salesman : offers[index].salesman.slice(1);
-    const urlPhoto = await this.getFileUrl(offers[index].photoId)
-    //const urlPhoto = await this.getPhotoUrlById(offers[index].photoId);
+    const nameSalesNick = offers[index].salesman[0] !== '@' ? offers[index].salesman : offers[index].salesman.slice(1)
+    const urlPhoto = await this.getPhotoUrlById(offers[index].photoId);
     return {
       photoId: urlPhoto,
       caption: `🔥 Пост ${index + 1}/${offers.length}\n\n` +
@@ -299,10 +298,9 @@ class BotClientController {
       let message = `🔥 Пост ${1}/${offers.length}:\n\n`;
       message+=offers[0].message;
 
-      //const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
+      const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
 
       const nameSalesNick = offers[0].salesman[0] !== '@' ? offers[0].salesman : offers[0].salesman.slice(1);
-      const urlPhoto = await this.getFileUrl(offers[0].photoId)
       await ctx.replyWithPhoto(urlPhoto, {
         caption: message,
         reply_markup: Markup.inlineKeyboard([
@@ -415,9 +413,24 @@ class BotClientController {
     return undefined;
 }
 
-private async getFileUrl(fileId: string): Promise<string> {
-  const file = await this.bot.telegram.getFile(fileId);
-  return `https://api.telegram.org/file/bot${process.env.API_BOT_CLIENT}/${file.file_path}`;
+private async getPhotoUrlById(fileId: string): Promise<string | null> {
+  try {
+    const response = await axios.get(`https://api.telegram.org/bot${process.env.API_BOT}/getFile`, {
+      params: { file_id: fileId },
+    });
+
+    if (!response.data.ok) {
+      console.error('Error fetching file path:', response.data.description);
+      return null;
+    }
+
+    const filePath = response.data.result.file_path;
+    const fileUrl = `https://api.telegram.org/file/bot${process.env.API_BOT}/${filePath}`;
+    return fileUrl;
+  } catch (error: any) {
+    console.error('Error getting photo URL:', error.message);
+    return null;
+  }
 }
 
   public async start() {
