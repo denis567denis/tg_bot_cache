@@ -124,7 +124,7 @@ class BotController {
   private generateUniqueFourDigitNumber(existingNumbers = new Set()) {
     let number;
     do {
-      number = Math.floor(Math.random() * (9999 - 1000 + 1)) + 10;
+      number = Math.floor(Math.random() * (9999 - 1000 + 1)) + 100;
     } while (existingNumbers.has(number));
     existingNumbers.add(number);
   
