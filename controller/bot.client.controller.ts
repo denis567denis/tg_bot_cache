@@ -87,7 +87,7 @@ class BotClientController {
       await this.showOffers(ctx, category, cahce, idJob);
     });
 
-    this.bot.action(/^prev;index:(.+);category:(.+);cahce:(.+);idjob:(.+)/, async (ctx) => {
+    this.bot.action(/^p;i:(.+);cat:(.+);cahce:(.+);id:(.+)/, async (ctx) => {
       let index = Number(ctx.match[1]);
       await updateDailyStats('' + ctx.from.id);
       const category = ctx.match[2];
@@ -105,7 +105,7 @@ class BotClientController {
       );
   });
   
-  this.bot.action(/^next;index:(.+);category:(.+);cahce:(.+);idjob:(.+)/, async (ctx) => {
+  this.bot.action(/^n;i:(.+);cat:(.+);cahce:(.+);id:(.+)/, async (ctx) => {
       const userId = ctx.from.id;
       await updateDailyStats('' + userId);
       let index = Number(ctx.match[1]);
@@ -280,9 +280,9 @@ class BotClientController {
               `${offers[index].message}`,
       reply_markup: Markup.inlineKeyboard([
             [
-              Markup.button.callback('⬅️', `prev;index:${index === 0? offers.length - 1: index-1};category:${category};cahce:${cahceRate};idjob:${idJob}`),
+              Markup.button.callback('⬅️', `p;i:${index === 0? offers.length - 1: index-1};cat:${category};cahce:${cahceRate};id:${idJob}`),
               Markup.button.url(`@${nameSalesNick}`, `https://${process.env.BOT_REDIRECT}?start=${nameSalesNick}`),
-              Markup.button.callback('➡️', `next;index:${index === offers.length - 1? 0: index+1};category:${category};cahce:${cahceRate};idjob:${idJob}`)
+              Markup.button.callback('➡️', `n;i:${index === offers.length - 1? 0: index+1};cat:${category};cahce:${cahceRate};id:${idJob}`)
             ]
         ]).reply_markup
     };
@@ -305,9 +305,9 @@ class BotClientController {
       await ctx.replyWithPhoto(urlPhoto, {
         caption: message,
         reply_markup: Markup.inlineKeyboard([
-          Markup.button.callback('⬅️', `prev;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`),
+          Markup.button.callback('⬅️', `p;i:${offers.length-1};cat:${category};cahce:${cahceRate};id:${idJob}`),
           Markup.button.url(`@${nameSalesNick}`, `https://${process.env.BOT_REDIRECT}?start=${nameSalesNick}`),
-          Markup.button.callback('➡️', `next;index:${1};category:${category};cahce:${cahceRate};idjob:${idJob}`)
+          Markup.button.callback('➡️', `n;i:${1};cat:${category};cahce:${cahceRate};id:${idJob}`)
   ]).reply_markup
       });
       
