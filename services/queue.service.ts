@@ -64,10 +64,6 @@ class UnifiedQueue {
       {
         connection: redisConnection,
         concurrency: 10,
-        limiter: {
-          max: 15,
-          duration: 60*1000
-        }
       }
     );
 
