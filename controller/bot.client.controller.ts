@@ -7,6 +7,7 @@ import { Markup } from 'telegraf';
 import { getPosts, savePosts } from '../services/storage.service';
 import { CacheRate, Categories } from '../cors/enumAll';
 import { updateDailyStats } from '../services/analiticUser.service';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -96,7 +97,7 @@ class BotClientController {
       const { caption, reply_markup, photoId } = await this.getMessageWithButtons(category, cahce, index, idJob);
       await ctx.editMessageMedia({
         type: 'photo',
-        media: photoId,
+        media: photoId!,
         caption: caption,
       }, {
         reply_markup: reply_markup
@@ -115,7 +116,7 @@ class BotClientController {
       const { caption, reply_markup, photoId } = await this.getMessageWithButtons(category, cahce, index, idJob);
       await ctx.editMessageMedia({
         type: 'photo',
-        media: photoId,
+        media: photoId!,
         caption: caption,
       }, {
         reply_markup: reply_markup
@@ -272,8 +273,9 @@ class BotClientController {
   private async getMessageWithButtons (category: string, cahceRate: string, index: number, idJob: string) {
     const offers = await getPosts(Categories[category  as keyof typeof  Categories], cahceRate, idJob);
     const nameSalesNick = offers[index].salesman[0] !== '@' ? offers[index].salesman : offers[index].salesman.slice(1)
+    const urlPhoto = await this.getPhotoUrlById(offers[index].photoId);
     return {
-      photoId: offers[index].photoId,
+      photoId: urlPhoto,
       caption: `🔥 Пост ${index + 1}/${offers.length}\n\n` +
               `${offers[index].message}`,
       reply_markup: Markup.inlineKeyboard([
@@ -296,8 +298,10 @@ class BotClientController {
       let message = `🔥 Пост ${1}/${offers.length}:\n\n`;
       message+=offers[0].message;
 
+      const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
+
       const nameSalesNick = offers[0].salesman[0] !== '@' ? offers[0].salesman : offers[0].salesman.slice(1);
-      await ctx.replyWithPhoto(offers[0].photoId, {
+      await ctx.replyWithPhoto(urlPhoto, {
         caption: message,
         reply_markup: Markup.inlineKeyboard([
           Markup.button.callback('⬅️', `prev_post;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`),
@@ -314,7 +318,6 @@ class BotClientController {
 
 
   public async sendNotifications(cacheRate: string, category: string, idJob: string) {
-    console.log("notificati_bofere_crate_work", cacheRate, category, idJob);
     unifiedQueue.addJob(
       JobType.NOTIFICATION,
       {
@@ -353,10 +356,8 @@ class BotClientController {
       const subscribers = await UserVipModel.find({ subscribeEvent: {
         $in: subscribeEvent
       } });
-      console.log('start_notification');
 
       for await (let sub of subscribers) {
-        console.log(subscribeEvent);
         await this.bot.telegram.sendMessage(
           sub.idTg,
           `🔥🔥🔥 вышло топ 10 предложений по ${job.data.category} .`,
@@ -400,6 +401,7 @@ class BotClientController {
     });
     this.users.delete(+idTg);
   }
+
   
   private getKeyByValue(enumObj: any, value: string): string | undefined {
     const keys = Object.keys(enumObj) as Array<keyof typeof enumObj>;
@@ -409,6 +411,26 @@ class BotClientController {
         }
     }
     return undefined;
+}
+
+private async getPhotoUrlById(fileId: string): Promise<string | null> {
+  try {
+    const response = await axios.get(`https://api.telegram.org/bot${process.env.API_BOT_CLIENT}/getFile`, {
+      params: { file_id: fileId },
+    });
+
+    if (!response.data.ok) {
+      console.error('Error fetching file path:', response.data.description);
+      return null;
+    }
+
+    const filePath = response.data.result.file_path;
+    const fileUrl = `https://api.telegram.org/file/bot${process.env.API_BOT_CLIENT}/${filePath}`;
+    return fileUrl;
+  } catch (error: any) {
+    console.error('Error getting photo URL:', error.message);
+    return null;
+  }
 }
 
   public async start() {
