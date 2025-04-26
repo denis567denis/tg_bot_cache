@@ -16,6 +16,24 @@ export enum Categories {
     adultGoods = "Товары для взрослых (18+)",
 }
 
+export enum CatAndCountPostBeforeNot {
+    electronics = 5,
+    clothingAndFootwear = 10,
+    beautyAndHealth = 10,
+    homeAndGarden = 10,
+    childrenGoods = 5,
+    sportsAndRecreation = 5,
+    automotiveGoods = 5,
+    BooksAndStationery = 5,
+    petSupplies = 5,
+    food = 3,
+    digitalGoods = 5,
+    hobbiesAndCreativity = 5,
+    luxuryGoods = 3,
+    buildingMaterialsAndTools = 3,
+    adultGoods = 3,
+}
+
 
 export enum CacheRate {
     first = '30-70',

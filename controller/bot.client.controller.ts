@@ -5,7 +5,7 @@ import { UserVipModel } from '../models/UserVipModel';
 import * as dotenv from 'dotenv';
 import { Markup } from 'telegraf';
 import { getPosts, savePosts } from '../services/storage.service';
-import { CacheRate, Categories } from '../cors/enumAll';
+import { CacheRate, CatAndCountPostBeforeNot, Categories } from '../cors/enumAll';
 import { updateDailyStats } from '../services/analiticUser.service';
 import axios from 'axios';
 
@@ -54,19 +54,24 @@ class BotClientController {
   private setupCommands() {
     this.bot.action(/^cacheRange:(.+)/, async (ctx) => {
       const userId = ctx.from.id;
-      const cache = ctx.match[1];
+      const cache = ctx.match[1].split(';');
       
       if (!this.users.has(userId)) {
-        this.users.set(userId, { categories: '', cashbackRange: cache });
+        this.users.set(userId, { categories: '', cashbackRange: cache[0] });
+      }
+      else {
+        const userState = this.users.get(userId)!;
+        userState.cashbackRange = cache[0];
       }
     
       await ctx.answerCbQuery(`Выбрано: ${cache}`);
-      await this.showCategorySelection(ctx);
+      await this.showCategorySelection(ctx, cache[1]);
     });
 
     this.bot.action(/^category:(.+)/, async (ctx) => {
       const userId = ctx.from.id;
-      const category = Categories[ctx.match[1] as keyof typeof  Categories]
+      const categoruFromstr = ctx.match[1].split(';')
+      const category = Categories[categoruFromstr[0] as keyof typeof  Categories]
       
       if (!this.users.has(userId)) {
         this.users.set(userId, { categories: category, cashbackRange: CacheRate.first });
@@ -76,7 +81,12 @@ class BotClientController {
       userState.categories = category;
     
       await ctx.answerCbQuery(`Выбрана категория: ${category}`);
-      await this.showFinalConfirmation(ctx);
+      if(categoruFromstr[1] === 'true') {
+        await this.showOffers(ctx, this.getKeyByValue(Categories,userState.categories)!, userState.cashbackRange, 'true');
+      }
+      else {
+        await this.showFinalConfirmation(ctx);
+      }
     });
 
     this.bot.action(/^view_offers:(.+);cahce:(.+);idjob:(.+)/, async (ctx) => {
@@ -144,6 +154,7 @@ class BotClientController {
             '➕ Добавить',
             '🗑 Удалить',
            '📊 Мои настройки',
+           '🔎 Посмотреть товар'
           ]).resize());
           await this.showCacheSelection(ctx);
         } catch (error: any) {
@@ -166,6 +177,10 @@ class BotClientController {
       if (messageText === '📊 Мои настройки') {
         await updateDailyStats('' + ctx.from.id);
         await this.showSetting(ctx)
+      }
+      if(messageText === '🔎 Посмотреть товар') {
+        await updateDailyStats('' + ctx.from.id);
+        await this.showCacheSelection(ctx, 'true');
       }
     });
     
@@ -214,12 +229,12 @@ class BotClientController {
     );
   }
 
-  private async showCacheSelection(ctx: any) {
+  private async showCacheSelection(ctx: any, findCat?: string) {
     const categoriesKeyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('30-70% ', `cacheRange:${CacheRate.first}`)],
-      [Markup.button.callback('70-80% ', `cacheRange:${CacheRate.second}`)],
-      [Markup.button.callback('80-100% ', `cacheRange:${CacheRate.third}`)],
-      [Markup.button.callback('Только 100% кэшбэк', `cacheRange:${CacheRate.free}`)],
+      [Markup.button.callback('30-70% ', `cacheRange:${CacheRate.first};${findCat}`)],
+      [Markup.button.callback('70-80% ', `cacheRange:${CacheRate.second};${findCat}`)],
+      [Markup.button.callback('80-100% ', `cacheRange:${CacheRate.third};${findCat}`)],
+      [Markup.button.callback('Только 100% кэшбэк', `cacheRange:${CacheRate.free};${findCat}`)],
     ]);
   
     await ctx.replyWithMarkdown(
@@ -229,23 +244,23 @@ class BotClientController {
 
   }
 
-  private async showCategorySelection(ctx: any) {
+  private async showCategorySelection(ctx: any, findCat?: any) {
     const categoriesKeyboard = Markup.inlineKeyboard([
-      [Markup.button.callback('Электроника 🔌💻', `category:electronics`)],
-      [Markup.button.callback('Одежда и обувь 👗👠', `category:clothingAndFootwear`)],
-      [Markup.button.callback('Красота и здоровье 💄🧴', `category:beautyAndHealth`)],
-      [Markup.button.callback('Дом и сад 🏡🌿', `category:homeAndGarden`)],
-      [Markup.button.callback('Детские товары 🧸👶', `category:childrenGoods`)],
-      [Markup.button.callback('Спорт и отдых ⚽🧘', `category:sportsAndRecreation`)],
-      [Markup.button.callback('Автотовары 🚗🔧', `category:automotiveGoods}`)],
-      [Markup.button.callback('Книги и канцелярия 📚✏️', `category:BooksAndStationery`)],
-      [Markup.button.callback('Зоотовары 🐶🐱', `category:petSupplies`)],
-      [Markup.button.callback('Продукты питания 🍎🥖', `category:food`)],
-      [Markup.button.callback('Цифровые товары 💾🎮', `category:digitalGoods`)],
-      [Markup.button.callback('Хобби и творчество 🎨🧵', `category:hobbiesAndCreativity`)],
-      [Markup.button.callback('Люкс-товары 💎🕶️', `category:luxuryGoods}`)],
-      [Markup.button.callback('Стройматериалы и инструменты 🧱🔨', `category:buildingMaterialsAndTools`)],
-      [Markup.button.callback('Товары для взрослых (18+) 🔞🎭', `category:adultGoods`)],
+      [Markup.button.callback('Электроника 🔌💻', `category:electronics;${findCat}`)],
+      [Markup.button.callback('Одежда и обувь 👗👠', `category:clothingAndFootwear;${findCat}`)],
+      [Markup.button.callback('Красота и здоровье 💄🧴', `category:beautyAndHealth;${findCat}`)],
+      [Markup.button.callback('Дом и сад 🏡🌿', `category:homeAndGarden;${findCat}`)],
+      [Markup.button.callback('Детские товары 🧸👶', `category:childrenGoods;${findCat}`)],
+      [Markup.button.callback('Спорт и отдых ⚽🧘', `category:sportsAndRecreation;${findCat}`)],
+      [Markup.button.callback('Автотовары 🚗🔧', `category:automotiveGoods;${findCat}`)],
+      [Markup.button.callback('Книги и канцелярия 📚✏️', `category:BooksAndStationery;${findCat}`)],
+      [Markup.button.callback('Зоотовары 🐶🐱', `category:petSupplies;${findCat}`)],
+      [Markup.button.callback('Продукты питания 🍎🥖', `category:food;${findCat}`)],
+      [Markup.button.callback('Цифровые товары 💾🎮', `category:digitalGoods;${findCat}`)],
+      [Markup.button.callback('Хобби и творчество 🎨🧵', `category:hobbiesAndCreativity;${findCat}`)],
+      [Markup.button.callback('Люкс-товары 💎🕶️', `category:luxuryGoods;${findCat}`)],
+      [Markup.button.callback('Стройматериалы и инструменты 🧱🔨', `category:buildingMaterialsAndTools;${findCat}`)],
+      [Markup.button.callback('Товары для взрослых (18+) 🔞🎭', `category:adultGoods;${findCat}`)],
     ]);
     await ctx.replyWithMarkdown(
       '🎯 *Выберите интересующие категории:*',
@@ -288,10 +303,46 @@ class BotClientController {
     };
 };
 
+private async findAndSaveAllOffers(cacheRateOffer: string, category: string) {
+  const cacheRate = cacheRateOffer.split('-');
+  let cacheMatch: Object | number = {};
+  if(cacheRate.length>1) {
+    cacheMatch= { 
+      $gte: +cacheRate[0],
+      $lte: +cacheRate[1]
+    }
+  }
+  else {
+    cacheMatch = 100;
+  }
+
+  const offers = await PostCacheModel.aggregate([
+    {
+      $match: {
+        category: { $in: [category] },
+        cache: cacheMatch,
+      }
+    },
+    {
+      $sort: {
+        createdAt: -1 
+      }
+    }
+  ]);
+  await savePosts(offers, category, cacheRateOffer, 'true' );
+}
+
   private async showOffers(ctx: any, category: string, cahceRate: string, idJob: string) {
     try {
-      const offers = await getPosts(Categories[category as keyof typeof Categories], cahceRate, idJob);
-      if (offers.length === 0) {
+      const categoryForEvent = Categories[category as keyof typeof Categories];
+      let offers =  null;
+        if(idJob==='true') {
+          await this.findAndSaveAllOffers(cahceRate, categoryForEvent);
+        }
+
+      offers = await getPosts(categoryForEvent, cahceRate, idJob);
+
+      if (!offers || offers.length === 0) {
         await ctx.reply(`😞 Пока нет активных предложений в категории ${category}`);
         return;
       }
@@ -300,7 +351,6 @@ class BotClientController {
 
       const urlPhoto = await this.getPhotoUrlById(offers[0].photoId);
 
-      console.log(`prev_post;index:${offers.length-1};category:${category};cahce:${cahceRate};idjob:${idJob}`);
       const nameSalesNick = offers[0].salesman[0] !== '@' ? offers[0].salesman : offers[0].salesman.slice(1);
       await ctx.replyWithPhoto(Input.fromURLStream(urlPhoto!), {
         caption: message,
@@ -332,16 +382,24 @@ class BotClientController {
 
   private async handleNotificationJob(job: { data: NotificationJobData }) {
     try {
-      const subscribeEvent = `category:${job.data.category};cacheRate:${job.data.cacheRate}`;
+      const subscribeEvent = `category:${job.data.category};cacheRate:${job.data.cacheRate === 'free' ? 100 : job.data.cacheRate}`;
+      const cutNubmer = CatAndCountPostBeforeNot[this.getKeyByValue(Categories, job.data.category) as keyof typeof CatAndCountPostBeforeNot];
       const cacheRate = job.data.cacheRate.split('-')
+      let cacheMatch: Object | number = {};
+      if(cacheRate.length>0) {
+        cacheMatch= { 
+          $gte: +cacheRate[0],
+          $lte: +cacheRate[1]
+        }
+      }
+      else {
+        cacheMatch = 100;
+      }
       const offers = await PostCacheModel.aggregate([
         {
           $match: {
             category: { $in: [job.data.category] },
-            cache: { 
-              $gte: +cacheRate[0],
-              $lte: +cacheRate[1]
-            }
+            cache: cacheMatch,
           }
         },
         {
@@ -350,7 +408,7 @@ class BotClientController {
           }
         },
         {
-          $limit: 10
+          $limit: cutNubmer
         }
       ]);
       await savePosts(offers,job.data.category, job.data.cacheRate, job.data.idJob );
@@ -361,7 +419,7 @@ class BotClientController {
       for await (let sub of subscribers) {
         await this.bot.telegram.sendMessage(
           sub.idTg,
-          `🔥🔥🔥 вышло топ 10 предложений по ${job.data.category} .`,
+          `🔥🔥🔥 вышло топ ${CatAndCountPostBeforeNot[this.getKeyByValue(Categories, job.data.category) as keyof typeof CatAndCountPostBeforeNot]} предложений по ${job.data.category} .`,
           {
             parse_mode: 'Markdown',
             reply_markup: {

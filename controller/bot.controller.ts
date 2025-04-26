@@ -3,8 +3,9 @@ import { PostCacheModel } from '../models/PostCacheModel';
 import { DeepSeekService } from '../services/deepseek.service';
 import { PostCountCategoryModel } from '../models/PostCountCategoryModel';
 import { unifiedQueue, JobType } from '../services/queue.service';
+import { getPosts, savePosts } from '../services/storage.service';
 import * as dotenv from 'dotenv';
-import { CacheRate } from '../cors/enumAll';
+import { CacheRate, CatAndCountPostBeforeNot, Categories } from '../cors/enumAll';
 import { botClientController } from './bot.client.controller';
 
 dotenv.config();
@@ -109,7 +110,7 @@ class BotController {
       { upsert: true, new: true }
     );
 
-    if (updatedStat.postCount >= 10) {
+    if (updatedStat.postCount >= CatAndCountPostBeforeNot[this.getKeyByValue(Categories, category) as keyof typeof CatAndCountPostBeforeNot]) {
       await botClientController.sendNotifications(cacheRate, category, '' + this.generateUniqueFourDigitNumber(this.usedNumbers));
       await PostCountCategoryModel.updateOne(
         { 
@@ -120,6 +121,16 @@ class BotController {
       );
     }
   }
+
+  private getKeyByValue(enumObj: any, value: string): string | undefined {
+    const keys = Object.keys(enumObj) as Array<keyof typeof enumObj>;
+    for (const key of keys) {
+        if (enumObj[key] === value) {
+            return key as string;
+        }
+    }
+    return undefined;
+}
 
   private generateUniqueFourDigitNumber(existingNumbers = new Set()) {
     let number;
