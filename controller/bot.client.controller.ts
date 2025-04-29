@@ -316,6 +316,7 @@ private async findAndSaveAllOffers(cacheRateOffer: string, category: string) {
     cacheMatch = 100;
   }
 
+
   const offers = await PostCacheModel.aggregate([
     {
       $match: {
@@ -417,24 +418,28 @@ private async findAndSaveAllOffers(cacheRateOffer: string, category: string) {
       } });
 
       for await (let sub of subscribers) {
-        await this.bot.telegram.sendMessage(
-          sub.idTg,
-          `🔥🔥🔥 вышло топ ${CatAndCountPostBeforeNot[this.getKeyByValue(Categories, job.data.category) as keyof typeof CatAndCountPostBeforeNot]} предложений по ${job.data.category} .`,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: 'Посмотреть предложения',
-                    callback_data: `view_offers:${this.getKeyByValue(Categories,job.data.category)};cahce:${job.data.cacheRate};idjob:${job.data.idJob}`
-                  }
+        try{
+          await this.bot.telegram.sendMessage(
+            sub.idTg,
+            `🔥🔥🔥 вышло топ ${CatAndCountPostBeforeNot[this.getKeyByValue(Categories, job.data.category) as keyof typeof CatAndCountPostBeforeNot]} предложений по ${job.data.category} .`,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: {
+                inline_keyboard: [
+                  [
+                    {
+                      text: 'Посмотреть предложения',
+                      callback_data: `view_offers:${this.getKeyByValue(Categories,job.data.category)};cahce:${job.data.cacheRate};idjob:${job.data.idJob}`
+                    }
+                  ]
                 ]
-              ]
+              }
             }
-          }
-        );
-        console.log(`Notification sent to ${sub.idTg}`);
+          );
+          console.log(`Notification sent to ${sub.idTg}`);
+        }catch(e){
+          console.log(e);
+        }
       }
     } catch (error) {
         console.log(`Notification failed for :`, error);
