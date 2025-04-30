@@ -92,7 +92,7 @@ class BotController {
     for(let cahceKey in CacheRate) {
       if(cahceKey === 'free') {
         if(cahce == 100) {
-          cacheRate = cahceKey;
+          cacheRate = '100';
           continue;
         }
       }

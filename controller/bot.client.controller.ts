@@ -383,11 +383,11 @@ private async findAndSaveAllOffers(cacheRateOffer: string, category: string) {
 
   private async handleNotificationJob(job: { data: NotificationJobData }) {
     try {
-      const subscribeEvent = `category:${job.data.category};cacheRate:${job.data.cacheRate === 'free' ? 100 : job.data.cacheRate}`;
+      const subscribeEvent = `category:${job.data.category};cacheRate:${job.data.cacheRate === '100' ? 100 : job.data.cacheRate}`;
       const cutNubmer = CatAndCountPostBeforeNot[this.getKeyByValue(Categories, job.data.category) as keyof typeof CatAndCountPostBeforeNot];
       const cacheRate = job.data.cacheRate.split('-')
       let cacheMatch: Object | number = {};
-      if(cacheRate.length>0) {
+      if(cacheRate.length>1) {
         cacheMatch= { 
           $gte: +cacheRate[0],
           $lte: +cacheRate[1]
